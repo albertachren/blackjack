@@ -17,8 +17,32 @@ class Cards { //Card deck class
     public Cards() {
         Collections.shuffle(cards);
     }
-
-    void deal(List<Integer> hand, int amount, boolean auto) {
+    
+    void deal(List<Integer> hand, boolean auto){
+    	int temp = cards.remove(0);
+    	
+    	if (temp == 11 && ((hand.stream().mapToInt(Integer::intValue).sum() + 11) > 21) && auto) {
+    		temp = 1;
+    	}
+    	
+    	if (temp == 11 && !auto) {
+    		System.out.println("You got an ace! 1 or 11?");
+    		boolean w = true;
+    		while (w) {
+	    		switch (scan.nextInt()) {
+	    			case 1: 
+	    				temp = 1;
+	    				w = false;
+	    			case 11:
+	    				temp = 11;
+	    				w = false;
+	    		}
+    		}
+    	}
+    	hand.add(temp);
+    }
+    /*
+   	void deal(List<Integer> hand, int amount, boolean auto) {
         int count = 1;
         do {
             int temp = cards.remove(0);
@@ -47,6 +71,7 @@ class Cards { //Card deck class
             count++;
         } while (count <= amount);
     }
+    */
 }
 
 class Hand { //Player hand class
@@ -106,13 +131,16 @@ class Blackjack {
 
             Cards pack = new Cards();
 
-            pack.deal(player.hand, 2, false);
-            pack.deal(dealer.hand, 1, true);
+            pack.deal(player.hand, false);
+            pack.deal(player.hand, false);
+            
+            pack.deal(dealer.hand, true);
+            
 
             Boolean playing = true;
 
             do {
-                System.out.println("Your hand:" + " " + player.getHand());//getHand
+                System.out.println("Your hand:" + " " + player.getHand()); 
                 System.out.println("Dealers hand:" + " " + dealer.getHand());
 
                 System.out.println("Hit/Stand?");
@@ -120,27 +148,27 @@ class Blackjack {
 
                 switch (choice) {
                     case "Hit":
-                        pack.deal(player.hand, 1, false);
-                        if (player.hand.stream().mapToInt(Integer::intValue).sum() > 21) { // checks to see if the player has gone over 21
+                        pack.deal(player.hand, false);
+                        if (player.hand.stream().mapToInt(Integer::intValue).sum() > 21) { // checks to see if the player has busted
                             win = false;
                             playing = false;
                         }
                         break;
                     case "Stand":
                         playing = false;
-                        pack.deal(dealer.hand, 1, false);
+                        pack.deal(dealer.hand, true);
                         System.out.println("Dealers hand:" + " " + dealer.getHand() + " " + "=" + " " + dealer.hand.stream().mapToInt(Integer::intValue).sum()); // prints the dealers hand and sum
 
                         while (dealer.hand.stream().mapToInt(Integer::intValue).sum() < 17) { // deals the dealer a card as long as his sum is under 17
-                            pack.deal(dealer.hand, 1, false);
+                            pack.deal(dealer.hand, true);
                             System.out.println("Dealers hand:" + " " + dealer.getHand() + " " + "=" + " " + dealer.hand.stream().mapToInt(Integer::intValue).sum()); // prints the dealers hand and sum
                             try {
-                                TimeUnit.SECONDS.sleep(1); // delay to make it easier to understand what is happening
+                                TimeUnit.SECONDS.sleep(1); // delay to make it easier to see what is happening
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
                         }
-                        win = player.compare(dealer); // final comparison if no one has gone over 21
+                        win = player.compare(dealer); // final comparison if no hand has busted
 
                         break;
                     default:
